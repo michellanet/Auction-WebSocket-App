@@ -1,0 +1,5 @@
+product\websocketproduct\models\Product.class
+product\websocketproduct\servers\SocketServer.class
+auction\auctionlisting\JAXRSConfiguration.class
+product\websocketproduct\repos\AuctionRepo.class
+auction\auctionlisting\resources\JavaEE8Resource.class

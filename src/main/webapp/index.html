@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start Page</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+        <script>
+            var socket = new WebSocket('ws://localhost:8080/AuctionListing/products')
+
+            $(document).ready(function () {
+
+                //reloads products listing when a product is bid on
+                socket.onmessage = messageReceived;
+
+                function messageReceived(response) {
+                    var products = JSON.parse(response.data);
+
+                    var productElem = document.createElement('div');
+                    productElem.id = 'container';
+
+                    var htmlString = '';
+                    var productsDIV = document.getElementById('products');
+                    for (p = 0; p < products.length; p++) {
+                        var product = products[p];
+                        htmlString += '<p>Title : ' + product.title + '</p>'
+                                + '<p>Auctioned By : ' + product.owner + '</p>'
+                                + '<p>Initial Price : ' + product.initialPrice + '</p>'
+                                + '<p>Bid interval: ' + product.currentBid + '</p>'
+                                + '<p>Current Bid Price: ' + product.currentPrice + '</p>'
+                                + '<button id="placeBid' + product.id + '"  onclick="placeBid(' + product.id + ');">Place Bid</button> <br/><br/>';
+
+
+
+                        // productsDIV.appendChild(productElem);
+                        if (productsDIV.hasChildNodes()) {//products are reloaded onto the page
+                            productsDIV.removeChild(productsDIV.childNodes[0]);
+                            productsDIV.appendChild(productElem);
+                        } else {//products elements are created and displayed
+                            productsDIV.appendChild(productElem);
+                        }
+                    }
+                    productElem.innerHTML = htmlString;
+                }
+
+                $('#addProduct').click(function () {
+                    var title = $('#title').val();
+                    var owner = $('#owner').val();
+                    var initialPrice = $('#initialPrice').val();
+
+                    var newProduct = {
+                        title: title,
+                        owner: owner,
+                        initialPrice: initialPrice,
+                        currentBid: 1,
+                        currentPrice: initialPrice,
+                        id: -1
+                    }
+                    var request = JSON.stringify(newProduct);
+
+                    socket.send(request);
+
+                    title = '';
+                    owner = '';
+                    initialPrice = '';
+                });
+            });
+
+            //onclick of placeBid on a product
+            function placeBid(id) {
+                var newProduct = {id: id}
+                var request = JSON.stringify(newProduct);
+
+                socket.send(request);
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Bidding Room</h1>
+        <div id="products">
+        </div>
+
+        <br/><br/>
+
+        <h1>Add Auction Room</h1>
+        <form>
+            <div id="setProducts">
+                <div>Title:   <input id="title" type="text" required/></div>
+                <div>Owner:   <input id="owner" type="text" required/></div>
+                <div>Initial Price:   <input id="initialPrice" type="text" required/></div>
+                <button id="addProduct">Add Product</button>
+            </div>
+        </form>
+    </body>
+</html>
